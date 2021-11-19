@@ -1,73 +1,59 @@
-const canvas = document.querySelector('canvas')
-const c = canvas.getContext('2d')
+var c = document.createElement("canvas");
+var ctx = c.getContext("2d");
+c.width = 500;
+c.height = 350;
+document.body.appendChild(c);
 
-canvas.width = innerWidth
-canvas.height = innerHeight
+var perm = [];
 
-const mouse = {
-  x: innerWidth / 2,
-  y: innerHeight / 2
+while (perm.length < 255){
+  while(perm.includes(val = Math.floor(Math.random()*255)));
+  perm.push(val);
 }
 
-const colors = ['#2185C5', '#7ECEFD', '#FFF6E5', '#FF7F66']
+var lerp = (a, b, t) => a + (b-a) * (1-Math.cos(t*Math.PI))/2;
+var noise = x=>{
+  x = x * 0.01 % 255;
+  return lerp(perm[Math.floor(x)], perm[Math.ceil(x)], x - Math.floor(x));
+}
 
-// Event Listeners
-addEventListener('mousemove', (event) => {
-  mouse.x = event.clientX
-  mouse.y = event.clientY
-})
+var player = new function(){
+  this.x = c.width/2; 
+  this.y = 0;
+  this.rot = 0;
 
-addEventListener('resize', () => {
-  canvas.width = innerWidth
-  canvas.height = innerHeight
+  this.img = new Image();
+  this.img.src = "dirtbike-blue.png";
+  this.draw = function(){
+    var p1 = c.height - noise(t + this.x) * 0.25;
+    if(p1 > this.y){
+      this.y
+    }
 
-  init()
-})
-
-// Objects
-class Particle {
-  constructor(x, y, radius, color) {
-    this.x = x
-    this.y = y
-    this.radius = radius
-    this.color = color
-  }
-
-  draw() {
-    c.beginPath()
-    c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
-    c.fillStyle = this.color
-    c.fill()
-    c.closePath()
-  }
-
-  update() {
-    this.draw()
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.drawImage(this.img, -15, -15, 30, 30);
+    ctx.restore();
   }
 }
 
-// Implementation
-let particles
-function init() {
-  particles = [];
 
-  for (let i = 0; i < 1; i++) {
-    particles.push( new Particle(canvas.width / 2, canvas.height / 2, 5, "blue"  ));
-  }
-  console.log(particles);
+var t = 0;
+function loop(){
+  t += 1; 
+  ctx.fillStyle = "#19f";
+  ctx.fillRect(0, 0, c.width, c.height);
 
+  ctx.fillStyle = "black";
+  ctx.beginPath();
+  ctx.moveTo(0, c.height);
+  for(let i = 0; i < c.width; i++)
+    ctx.lineTo(i, c.height - noise(t + i) * 0.25);
+
+    ctx.lineTo(c.width, c.height);
+    ctx.fill();
+  player.draw();
+  requestAnimationFrame(loop);
 }
 
-// Animation Loop
-function animate() {
-  requestAnimationFrame(animate)
-  c.clearRect(0, 0, canvas.width, canvas.height)
-
-  // c.fillText('HTML CANVAS BOILERPLATE', mouse.x, mouse.y)
-  particles.forEach(particle => {
-   particle.update()
-  })
-}
-
-init()
-animate()
+loop();
